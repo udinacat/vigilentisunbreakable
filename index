@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>welcome to my site!</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="window">
+
+  <!-- title bar: change the file name here -->
+  <div class="titlebar">
+    <span>★</span>
+    <span class="name">welcome to my site!</span>
+    <button class="wbtn min" title="minimize">–</button>
+    <button class="wbtn max" title="maximize">□</button>
+    <button class="wbtn close" title="close">✕</button>
+  </div>
+
+  <!-- toolbar / address bar -->
+  <div class="toolbar">
+    <a class="tbtn" id="back" href="#" title="Back">◀</a>
+    <a class="tbtn" id="fwd" href="#" title="Forward">▶</a>
+    <a class="tbtn" href="javascript:location.reload()" title="Refresh">⟳</a>
+    <a class="tbtn" href="index.html" title="Home">⌂</a>
+    <input class="address" value="https://yourname.neocities.org" aria-label="Address bar" readonly>
+    <button class="go">Search</button>
+  </div>
+
+  <!-- header -->
+  <header>
+    <h1>Your Site Title</h1>
+    <p>a little tagline goes here</p>
+  </header>
+
+  <main>
+    <div class="top">
+      <!-- left: profile picture + chat bubble -->
+      <div class="profile">
+        <div class="pfp">
+          <!-- replace the emoji with: <img src="pfp.png" alt="profile picture"> -->
+          🫧
+        </div>
+        <div class="bubble">Hi! Put a short message or your status here.</div>
+      </div>
+
+      <!-- right: space for the details you'll add later -->
+      <div class="panel">
+        <h2>Coming soon</h2>
+        <div class="body placeholder">more stuff goes here</div>
+      </div>
+    </div>
+
+    <!-- big text box -->
+    <section class="panel bigbox">
+      <h2>About me</h2>
+      <div class="body">
+        <p>Write your main text here. Add paragraphs, links, lists, anything you like.</p>
+        <canvas id="pad" width="600" height="400" aria-label="Shared drawing pad"></canvas>
+        <div id="palette" class="palette"></div>
+        <div class="brush">
+          <label for="size">Brush size</label>
+          <input type="range" id="size" min="1" max="30" value="4">
+          <span class="dotwrap"><i id="dot"></i></span>
+        </div>
+        <div class="padbar">
+          <div class="tools">
+            <button id="undo" class="pbtn" title="Undo">↶ Undo</button>
+            <button id="redo" class="pbtn" title="Redo">↷ Redo</button>
+            <button id="check" class="pbtn check" title="Share my drawing">✓ Share</button>
+          </div>
+          <span id="status"></span>
+          <button id="release" class="go" hidden>Give up my color</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>© 2026 your name</span>
+    <span>made on neocities</span>
+  </footer>
+</div>
+
+<script>
+/* back / forward arrows: behave like the browser's own buttons */
+(function () {
+  var back = document.getElementById('back'), fwd = document.getElementById('fwd');
+  if (back) back.addEventListener('click', function (e) {
+    e.preventDefault();
+    if (history.length > 1) history.back();                       // go to whatever page they came from
+    else if (back.getAttribute('href') !== '#') location.href = back.getAttribute('href'); // nothing before this page: use fallback
+  });
+  var bar = document.querySelector('.address');                    // show the page's real link
+  if (bar) bar.value = location.href;
+  if (fwd) fwd.addEventListener('click', function (e) { e.preventDefault(); history.forward(); });
+})();
+</script>
+<script type="module">
+/* ====== PASTE YOUR FIREBASE CONFIG HERE (see setup steps) ====== */
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+  projectId: "YOUR_PROJECT",
+  appId: "YOUR_APP_ID"
+};
+/* =============================================================== */
+
+const COLORS = ["#ff3b30","#ff6a00","#ff9500","#ffc400","#ffee32","#b6e03a","#4cd964","#1fc99a","#22d3ee","#2f9bff","#3b5bff","#8a4dff","#e24ad8"];
+const IDS = COLORS.map((_, i) => "c" + i), MAX = 2;
+const $ = id => document.getElementById(id);
+const pad = $("pad"), ctx = pad.getContext("2d"), palette = $("palette"), statusEl = $("status");
+const releaseBtn = $("release"), undoBtn = $("undo"), redoBtn = $("redo"), checkBtn = $("check");
+ctx.lineCap = ctx.lineJoin = "round"; ctx.lineWidth = 4;
+
+let db = null, uid = null, myColor = null, taken = {}, online = false, fb = {};
+const published = [];            // strokes everyone can see
+let pending = [], redoStack = []; // my unshared strokes
+
+function drawSeg(color, p, w) {
+  ctx.lineWidth = w || 4; ctx.strokeStyle = color; ctx.beginPath(); ctx.moveTo(p[0], p[1]);
+  if (p.length === 2) ctx.lineTo(p[0] + .1, p[1]);
+  for (let i = 2; i < p.length; i += 2) ctx.lineTo(p[i], p[i + 1]);
+  ctx.stroke();
+}
+function redraw() {
+  ctx.clearRect(0, 0, pad.width, pad.height);
+  published.forEach(s => drawSeg(s.col, s.p, s.w)); pending.forEach(s => drawSeg(s.col, s.p, s.w));
+}
+
+function ui() {
+  palette.innerHTML = "";
+  IDS.forEach((id, i) => {
+    const n = Object.keys(taken[id] || {}).length, mine = myColor === id;
+    const b = document.createElement("button");
+    b.className = "sw"; b.style.background = COLORS[i];
+    const left = online ? MAX - n : MAX;
+    b.textContent = left;
+    b.title = left + (left === 1 ? " spot" : " spots") + " left on this color";
+    if (online && !mine && n >= MAX) { b.classList.add("taken"); b.disabled = true; }
+    if (mine) b.classList.add("mine");
+    b.onclick = () => pick(id);
+    palette.appendChild(b);
+  });
+  releaseBtn.hidden = !(online && myColor);
+  dot.style.background = myColor ? COLORS[IDS.indexOf(myColor)] : "";
+  undoBtn.disabled = !pending.length; redoBtn.disabled = !redoStack.length; checkBtn.disabled = !pending.length;
+  statusEl.textContent = !online ? "Offline preview: add your Firebase config to share the board."
+    : !myColor ? "Pick a color to claim it. Up to 2 people can share one."
+    : pending.length ? pending.length + " stroke" + (pending.length > 1 ? "s" : "") + " ready. Press ✓ to share."
+    : "Draw something, then press ✓ to share it.";
+}
+
+async function pick(id) {
+  if (!online) { myColor = id; ui(); return; }
+  if (myColor === id) return;
+  if (myColor) { statusEl.textContent = "You already have a color. Give it up to switch."; return; }
+  try {
+    try { await fb.remove(fb.ref(db, "users/" + uid)); } catch {}      // clear any leftover claim
+    await fb.set(fb.ref(db, "users/" + uid), id);                     // "my one color"
+    let ok = false;
+    for (const slot of ["a", "b"]) {                                  // each color has 2 spots
+      try { await fb.set(fb.ref(db, "colors/" + id + "/" + slot), uid); ok = true; break; } catch {}
+    }
+    if (!ok) { await fb.remove(fb.ref(db, "users/" + uid)); statusEl.textContent = "That color just filled up. Try another!"; }
+  } catch { statusEl.textContent = "Couldn't claim that color. Try again."; }
+}
+releaseBtn.onclick = async () => {
+  if (!myColor) return; const c = myColor;
+  try {
+    for (const slot of ["a", "b"]) if (taken[c] && taken[c][slot] === uid) await fb.remove(fb.ref(db, "colors/" + c + "/" + slot));
+    await fb.remove(fb.ref(db, "users/" + uid));
+  } catch (e) { console.error(e); }
+};
+
+/* drawing */
+let pts = null, strokeW = 4;
+const sizeEl = $("size"), dot = $("dot");
+sizeEl.oninput = () => { dot.style.width = dot.style.height = sizeEl.value + "px"; };
+const pos = e => { const r = pad.getBoundingClientRect();
+  return [Math.round((e.clientX - r.left) * pad.width / r.width), Math.round((e.clientY - r.top) * pad.height / r.height)]; };
+pad.addEventListener("pointerdown", e => {
+  if (!myColor) { statusEl.textContent = "Pick a color first!"; return; }
+  pad.setPointerCapture(e.pointerId); pts = pos(e); strokeW = +sizeEl.value; drawSeg(COLORS[IDS.indexOf(myColor)], pts, strokeW);
+});
+pad.addEventListener("pointermove", e => {
+  if (!pts || pts.length >= 4000) return; const p = pos(e), n = pts.length;
+  drawSeg(COLORS[IDS.indexOf(myColor)], [pts[n - 2], pts[n - 1], ...p], strokeW); pts.push(...p);
+});
+const end = () => {
+  if (!pts) return;
+  pending.push({ col: COLORS[IDS.indexOf(myColor)], c: myColor, p: pts, w: strokeW }); redoStack = []; pts = null; ui();
+};
+pad.addEventListener("pointerup", end); pad.addEventListener("pointercancel", end);
+
+undoBtn.onclick = () => { if (pending.length) { redoStack.push(pending.pop()); redraw(); ui(); } };
+redoBtn.onclick = () => { if (redoStack.length) { pending.push(redoStack.pop()); redraw(); ui(); } };
+checkBtn.onclick = async () => {
+  if (!pending.length) return;
+  if (!online) { published.push(...pending); pending = []; redoStack = []; redraw(); ui(); return; }
+  const batch = {};
+  pending.forEach(s => { batch[fb.push(fb.ref(db, "strokes")).key] = { c: s.c, p: s.p, w: s.w }; });
+  try { await fb.update(fb.ref(db, "strokes"), batch); pending = []; redoStack = []; redraw(); ui(); }
+  catch { statusEl.textContent = "Couldn't share. Check your connection and try again."; }
+};
+
+ui();
+
+if (!firebaseConfig.apiKey.startsWith("YOUR_")) {
+  try {
+    const base = "https://www.gstatic.com/firebasejs/10.12.2/";
+    const [app, auth, rtdb] = await Promise.all([import(base + "firebase-app.js"), import(base + "firebase-auth.js"), import(base + "firebase-database.js")]);
+    const a = app.initializeApp(firebaseConfig); db = rtdb.getDatabase(a);
+    fb = { ref: rtdb.ref, push: rtdb.push, set: rtdb.set, remove: rtdb.remove, update: rtdb.update };
+    uid = (await auth.signInAnonymously(auth.getAuth(a))).user.uid; online = true;
+    rtdb.onValue(rtdb.ref(db, "colors"), s => {
+      taken = s.val() || {}; const had = myColor;
+      myColor = IDS.find(id => Object.values(taken[id] || {}).includes(uid)) || null;
+      if (had && !myColor && pending.length) { pending = []; redoStack = []; redraw(); }
+      ui();
+    });
+    rtdb.onChildAdded(rtdb.query(rtdb.ref(db, "strokes"), rtdb.limitToLast(500)), s => {
+      const v = s.val(), i = IDS.indexOf(v.c);
+      if (i > -1 && Array.isArray(v.p)) { const w = Math.min(30, Math.max(1, +v.w || 4)); published.push({ col: COLORS[i], p: v.p, w }); drawSeg(COLORS[i], v.p, w); }
+    });
+  } catch (err) { console.error(err); statusEl.textContent = "Couldn't connect. Check your Firebase setup."; }
+}
+</script>
+</body>
+</html>
