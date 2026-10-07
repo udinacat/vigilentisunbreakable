@@ -1,0 +1,154 @@
+:root{
+    --sky:#6fb8f5; --deep:#2f6fdb; --ice:#e8f6ff; --aqua:#7fe3f0;
+    --lime:#b8f27a; --ink:#1c3f8c; --line:#8ec5f5;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    min-height:100vh; padding:24px 12px 60px;
+    font-family:"Trebuchet MS","Segoe UI",Verdana,sans-serif; color:var(--ink);
+    background:
+      radial-gradient(circle at 15% 20%, #fff8 0 6%, transparent 7%),
+      radial-gradient(circle at 80% 30%, #fff6 0 9%, transparent 10%),
+      radial-gradient(circle at 60% 85%, #fff5 0 5%, transparent 6%),
+      linear-gradient(#5aa9f2 0%, #a9dcfb 55%, #9be27a 100%);
+    background-attachment:fixed;
+  }
+
+  /* ---------- window ---------- */
+  .window{
+    max-width:880px; margin:0 auto; border-radius:14px; overflow:hidden;
+    background:var(--ice); border:2px solid #fff;
+    box-shadow:0 0 0 3px #4a90e2aa, 0 18px 40px #1c3f8c55;
+  }
+  .titlebar{
+    display:flex; align-items:center; gap:10px; padding:8px 12px;
+    background:linear-gradient(#8fd0ff, #3f86e8 55%, #2f6fdb);
+    border-bottom:2px solid #fff8; color:#fff;
+    text-shadow:0 1px 2px #1c3f8c99; font-weight:bold; letter-spacing:.5px;
+  }
+  .titlebar .name{flex:1}
+  .wbtn{
+    width:26px; height:26px; border-radius:50%; border:2px solid #fff; cursor:pointer;
+    color:#fff; font-weight:bold; font-size:13px; line-height:1;
+    box-shadow:inset 0 6px 8px #fff7, 0 1px 3px #0005;
+  }
+  .wbtn.min,.wbtn.max{background:linear-gradient(#a6e4ff,#2f8fe8)}
+  .wbtn.close{background:linear-gradient(#ff9b8a,#e0301e)}
+
+  /* ---------- toolbar ---------- */
+  .toolbar{
+    display:flex; align-items:center; gap:8px; padding:8px 12px;
+    background:linear-gradient(#f4fbff,#cfe9fb); border-bottom:2px solid var(--line);
+  }
+  .tbtn{
+    width:32px; height:32px; border-radius:50%; border:2px solid #fff; cursor:pointer;
+    background:linear-gradient(#9fdcff,#3d8be6); color:#fff; font-size:16px;
+    box-shadow:inset 0 7px 8px #fff8, 0 1px 3px #1c3f8c66;
+    display:grid; place-items:center; text-decoration:none;
+  }
+  .tbtn:hover{filter:brightness(1.1)}
+  .address{
+    flex:1; min-width:0; height:32px; border-radius:16px; padding:0 14px;
+    border:2px solid var(--line); background:#fff; color:var(--ink);
+    font:inherit; font-size:14px; outline:none;
+  }
+  .address:focus{border-color:var(--deep)}
+  .go{
+    padding:0 16px; height:32px; border-radius:16px; border:2px solid #fff; cursor:pointer;
+    background:linear-gradient(#d9ff9f,#7fd63e); color:#2b5a10; font-weight:bold;
+    box-shadow:inset 0 7px 8px #fff9, 0 1px 3px #1c3f8c55;
+  }
+
+  /* ---------- header ---------- */
+  header{
+    padding:30px 20px; text-align:center; color:#fff; position:relative; overflow:hidden;
+    background:
+      radial-gradient(ellipse at 20% 120%, #b8f27a99 0 30%, transparent 31%),
+      radial-gradient(circle at 85% 20%, #fff7 0 12%, transparent 13%),
+      linear-gradient(#5db2ff,#2f6fdb);
+    border-bottom:2px solid #fff;
+  }
+  header::after{ /* glossy shine */
+    content:""; position:absolute; inset:0 0 50% 0;
+    background:linear-gradient(#fff6,#fff1); pointer-events:none;
+  }
+  header h1{margin:0; font-size:clamp(28px,6vw,46px); text-shadow:0 2px 0 #1c3f8c88, 0 0 14px #fff8;}
+  header p{margin:6px 0 0; font-size:15px; text-shadow:0 1px 2px #1c3f8c99}
+
+  /* ---------- main ---------- */
+  main{padding:20px; display:grid; gap:20px}
+  .top{display:grid; grid-template-columns:auto 1fr; gap:20px; align-items:start}
+  .profile{display:flex; gap:14px; align-items:flex-start}
+  .pfp{
+    width:150px; height:150px; flex:none; border-radius:12px; border:3px solid #fff;
+    background:linear-gradient(#bfe8ff,#7fc4f5); overflow:hidden;
+    box-shadow:0 0 0 2px var(--line), 0 6px 12px #1c3f8c44;
+    display:grid; place-items:center; font-size:64px;
+  }
+  .pfp img{width:100%; height:100%; object-fit:cover; display:block}
+
+  /* speech bubble */
+  .bubble{
+    position:relative; max-width:210px; padding:14px 16px; margin-top:8px;
+    background:linear-gradient(#ffffff,#e2f5ff); border:2px solid var(--line);
+    border-radius:22px; font-size:14px; line-height:1.4;
+    box-shadow:inset 0 -6px 10px #7fc4f533, 0 4px 8px #1c3f8c33;
+  }
+  .bubble::before{ /* tail pointing at pfp */
+    content:""; position:absolute; left:-12px; top:22px; width:20px; height:20px;
+    background:#f3fbff; border-left:2px solid var(--line); border-bottom:2px solid var(--line);
+    transform:rotate(45deg); border-bottom-left-radius:4px;
+  }
+
+  .panel{
+    border:2px solid var(--line); border-radius:12px; background:#fff;
+    box-shadow:inset 0 0 0 2px #f2faff;
+  }
+  .panel h2{
+    margin:0; padding:6px 14px; font-size:15px; color:#fff; border-radius:10px 10px 0 0;
+    background:linear-gradient(#7cc6ff,#3d86e6); text-shadow:0 1px 2px #1c3f8c99;
+  }
+  .panel .body{padding:14px; line-height:1.6; font-size:15px}
+  .placeholder{display:grid; place-items:center; min-height:150px; color:#7aa3d6; text-align:center}
+  .bigbox .body{min-height:240px}
+
+  footer{
+    padding:8px 14px; font-size:13px; display:flex; justify-content:space-between; gap:10px;
+    background:linear-gradient(#cfe9fb,#a9d6f7); border-top:2px solid var(--line);
+  }
+
+  /* drawing pad */
+  #pad{width:100%; height:auto; display:block; background:#fff; border:2px solid var(--line);
+    border-radius:10px; touch-action:none; cursor:crosshair}
+  .palette{display:grid; grid-template-columns:repeat(13,1fr); gap:5px; margin-top:10px}
+  .sw{aspect-ratio:1; border-radius:50%; border:2px solid #fff; cursor:pointer; padding:0;
+    box-shadow:inset 0 5px 6px #fff8, 0 1px 3px #1c3f8c77; position:relative}
+  .sw{display:grid; place-items:center; color:#fff; font:bold clamp(10px,2.4vw,16px) "Trebuchet MS",sans-serif;
+    text-shadow:0 1px 2px #000a}
+  .sw.taken{background:#b9c2cc !important; color:#6b7480; text-shadow:none; cursor:not-allowed; box-shadow:none}
+  .sw.mine{outline:3px solid var(--deep); outline-offset:2px}
+  .padbar{display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:10px; font-size:13px}
+  .padbar .go{font-size:12px}
+  .padbar{flex-wrap:wrap}
+  .tools{display:flex; gap:8px}
+  .pbtn{height:34px; padding:0 14px; border-radius:12px; border:2px solid #fff; cursor:pointer;
+    font:inherit; font-size:14px; font-weight:bold; color:#fff; text-shadow:0 1px 2px #1c3f8c99;
+    background:linear-gradient(#9fdcff,#3d8be6); box-shadow:inset 0 8px 8px #fff8, 0 1px 3px #1c3f8c66}
+  .pbtn:hover{filter:brightness(1.1)}
+  .pbtn:disabled{opacity:.4; cursor:not-allowed; filter:none}
+  .pbtn.check{background:linear-gradient(#d9ff9f,#7fd63e); color:#2b5a10; text-shadow:none}
+  @media (max-width:640px){
+    .top{grid-template-columns:1fr}
+    .profile{flex-direction:column; align-items:center}
+    .bubble::before{left:calc(50% - 10px); top:-11px; transform:rotate(135deg)}
+    .bubble{max-width:100%}
+    .go{display:none}
+  }
+
+  /* brush size */
+  .brush{display:flex; align-items:center; gap:10px; margin-top:10px; font-size:13px; font-weight:bold}
+  .brush input{flex:1; min-width:0; accent-color:var(--deep)}
+  .dotwrap{width:34px; height:34px; flex:none; display:grid; place-items:center;
+    border:2px solid var(--line); border-radius:10px; background:#fff}
+  #dot{display:block; border-radius:50%; background:var(--deep); width:4px; height:4px}
