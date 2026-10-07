@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>music</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  .player{display:flex; flex-direction:column; align-items:center; text-align:center}
+  .vinylwrap{position:relative; width:100%; aspect-ratio:1; border-radius:50%;
+    box-shadow:0 0 0 4px #fff, 0 0 0 7px #8ec5f5, 0 12px 26px #1c3f8c66}
+  .vinylwrap::after{content:""; position:absolute; inset:0; border-radius:50%; pointer-events:none;
+    background:conic-gradient(from 20deg, transparent 0 20%, #ffffff14 25%, transparent 30% 70%, #ffffff14 75%, transparent 80%)}
+  .top .panel{aspect-ratio:1; display:flex; flex-direction:column; overflow:hidden}
+  .top .panel .body.player{flex:1; min-height:0; container-type:inline-size; justify-content:space-evenly; gap:6px}
+  /* full vinyl, sized to fit the square window */
+  .vinylclip{width:50cqw; flex:none; margin:6px 0}
+  .disc{width:100%; height:100%; border-radius:50%; position:relative; display:grid; place-items:center;
+    background:
+      conic-gradient(from 0deg, transparent 0 6%, #ffffff40 9%, transparent 13%, transparent 40%, #ffffff26 44%, transparent 49%, transparent 72%, #ffffff33 76%, transparent 81%),
+      repeating-radial-gradient(circle, #0d1117 0 2px, #1d2530 3px 4px);
+    animation:spin 5s linear infinite; animation-play-state:paused}
+  .disc.playing{animation-play-state:running}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .label{width:40%; aspect-ratio:1; border-radius:50%; overflow:hidden; border:3px solid #ffffff55;
+    background:linear-gradient(135deg,#7fe3f0,#6fb8f5 50%,#b8f27a); position:relative}
+  .label img{width:100%; height:100%; object-fit:cover; display:block}
+  .label::after{content:""; position:absolute; left:50%; top:50%; width:11px; height:11px; border-radius:50%;
+    transform:translate(-50%,-50%); background:#e8f6ff; box-shadow:0 0 0 2px #1c3f8c55}
+  .songtitle{font-size:19px; font-weight:bold}
+  .seekrow{display:flex; align-items:center; gap:10px; width:84%; font-size:12px; color:#5b86c9; font-variant-numeric:tabular-nums}
+  .seek{flex:1; min-width:0; height:16px; margin:0; background:none; -webkit-appearance:none; appearance:none; cursor:pointer}
+  .seek::-webkit-slider-runnable-track{height:8px; border-radius:4px; border:1px solid #fff; box-shadow:0 0 0 1px #8ec5f5;
+    background:linear-gradient(to right,#3d8be6 var(--p,0%),#bcd9f5 var(--p,0%))}
+  .seek::-moz-range-track{height:8px; border-radius:4px; border:1px solid #fff; box-shadow:0 0 0 1px #8ec5f5;
+    background:linear-gradient(to right,#3d8be6 var(--p,0%),#bcd9f5 var(--p,0%))}
+  .seek::-webkit-slider-thumb{-webkit-appearance:none; width:16px; height:16px; margin-top:-5px; border-radius:50%; border:2px solid #fff;
+    background:radial-gradient(circle at 35% 30%,#fff,#9fdcff 55%,#3d8be6); box-shadow:0 1px 3px #1c3f8c88}
+  .seek::-moz-range-thumb{width:12px; height:12px; border-radius:50%; border:2px solid #fff;
+    background:radial-gradient(circle at 35% 30%,#fff,#9fdcff 55%,#3d8be6); box-shadow:0 1px 3px #1c3f8c88}
+  .controls{display:flex; align-items:center; gap:20px}
+  .ibtn{background:none; border:0; padding:0; line-height:0; cursor:pointer; color:var(--deep);
+    filter:drop-shadow(0 2px 2px #1c3f8c55)}
+  .ibtn:hover{filter:drop-shadow(0 2px 2px #1c3f8c55) brightness(1.2)}
+  .volume{display:flex; align-items:center; gap:8px; width:min(240px,80%)}
+  .volume input{flex:1; min-width:0; accent-color:var(--deep)}
+</style>
+</head>
+<body>
+
+<div class="window">
+
+  <!-- title bar: change the file name here -->
+  <div class="titlebar">
+    <span>★</span>
+    <span class="name">welcome to my site!</span>
+    <button class="wbtn min" title="minimize">–</button>
+    <button class="wbtn max" title="maximize">□</button>
+    <button class="wbtn close" title="close">✕</button>
+  </div>
+
+  <!-- toolbar / address bar -->
+  <div class="toolbar">
+    <a class="tbtn" id="back" href="#" title="Back">◀</a>
+    <a class="tbtn" id="fwd" href="#" title="Forward">▶</a>
+    <a class="tbtn" href="javascript:location.reload()" title="Refresh">⟳</a>
+    <a class="tbtn" href="index.html" title="Home">⌂</a>
+    <input class="address" value="https://yourname.neocities.org" aria-label="Address bar" readonly>
+    <button class="go">Search</button>
+  </div>
+
+  <!-- header -->
+  <header>
+    <h1>Your Site Title</h1>
+    <p>a little tagline goes here</p>
+  </header>
+
+  <main>
+    <div class="top">
+      <!-- left: profile picture + chat bubble -->
+      <div class="profile">
+        <div class="pfp">
+          <!-- replace the emoji with: <img src="pfp.png" alt="profile picture"> -->
+          🫧
+        </div>
+        <div class="bubble">Hi! Put a short message or your status here.</div>
+      </div>
+
+      <!-- right: space for the details you'll add later -->
+      <div class="panel">
+        <h2>Now playing</h2>
+        <div class="body player">
+        <div class="vinylclip"><div class="vinylwrap">
+          <div class="disc" id="disc">
+            <div class="label">
+              <!-- change the picture: replace cover.jpg with your own image file name -->
+              <img id="cover" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiDf2xqTX1D1h-SZ8CXkc7BXwxqf7qSgBuYAA1uqkziRuZdzCeolpPwjzs-3WRqpC47m3y-9snrNz4kgjwqk9DmfTL71eVJCOY_9_MHcts0hVFeOKxSC16PIwvAK-x4VoRtmFHwBcE-lrTm/s1600/Queen+-+Sheer+Heart+Attack.jpg" alt="album cover" onerror="this.style.display='none'">
+            </div>
+          </div>
+        </div></div>
+        <div class="songtitle" id="title">Song Title Here</div>
+        <div class="seekrow">
+          <span id="cur">0:00</span>
+          <input type="range" class="seek" id="seek" min="0" max="1000" value="0" aria-label="Song position">
+          <span id="dur">0:00</span>
+        </div>
+        <div class="controls">
+          <button class="ibtn" title="Previous" aria-label="Previous"><svg viewBox="0 0 24 24" width="34" height="34" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
+          <button class="ibtn" id="play" title="Play" aria-label="Play"><svg viewBox="0 0 24 24" width="54" height="54" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+          <button class="ibtn" title="Next" aria-label="Next"><svg viewBox="0 0 24 24" width="34" height="34" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
+        </div>
+        <div class="volume"><span>🔊</span><input type="range" id="vol" min="0" max="100" value="70" aria-label="Volume"></div>
+        <!-- change the song: replace song.mp3 with your own audio file name -->
+        <audio id="audio" src="https://mp3tourl.com/audio/1791039824174-28b62829-8760-4918-be95-0475153f8d80.mp3" preload="metadata"></audio>
+        </div>
+      </div>
+    </div>
+
+    <!-- big text box -->
+
+
+    <!-- big text box -->
+    <section class="panel bigbox">
+      <h2>About me</h2>
+      <div class="body">
+        <p>Write your main text here. Add paragraphs, links, lists, anything you like.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>© 2026 your name</span>
+    <span>made on neocities</span>
+  </footer>
+</div>
+
+<script>
+/* back / forward arrows: behave like the browser's own buttons */
+(function () {
+  var back = document.getElementById('back'), fwd = document.getElementById('fwd');
+  if (back) back.addEventListener('click', function (e) {
+    e.preventDefault();
+    if (history.length > 1) history.back();                       // go to whatever page they came from
+    else if (back.getAttribute('href') !== '#') location.href = back.getAttribute('href'); // nothing before this page: use fallback
+  });
+  var bar = document.querySelector('.address');                    // show the page's real link
+  if (bar) bar.value = location.href;
+  if (fwd) fwd.addEventListener('click', function (e) { e.preventDefault(); history.forward(); });
+})();
+</script>
+<script>
+const $ = id => document.getElementById(id);
+const audio = $("audio"), disc = $("disc"), playBtn = $("play"), vol = $("vol"), seek = $("seek");
+const ICON = {
+  play: '<svg viewBox="0 0 24 24" width="54" height="54" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
+  pause: '<svg viewBox="0 0 24 24" width="54" height="54" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>'
+};
+let demo = false; // lets the vinyl spin for preview when no song file is uploaded yet
+const fmt = t => isFinite(t) ? Math.floor(t / 60) + ":" + String(Math.floor(t % 60)).padStart(2, "0") : "0:00";
+const setPlaying = on => {
+  disc.classList.toggle("playing", on);
+  playBtn.innerHTML = on ? ICON.pause : ICON.play;
+  playBtn.title = playBtn.ariaLabel = on ? "Pause" : "Play";
+};
+const showTime = () => {
+  const d = audio.duration, p = isFinite(d) && d > 0 ? audio.currentTime / d * 100 : 0;
+  $("cur").textContent = fmt(audio.currentTime); $("dur").textContent = fmt(d);
+  seek.value = p * 10; seek.style.setProperty("--p", p + "%");
+};
+
+playBtn.onclick = () => {
+  if (!audio.paused) { audio.pause(); return; }
+  if (demo) { demo = false; setPlaying(false); return; }
+  audio.play().catch(() => { demo = true; setPlaying(true); });
+};
+audio.onplay = () => setPlaying(true);
+audio.onpause = audio.onended = () => setPlaying(false);
+audio.ontimeupdate = audio.onloadedmetadata = showTime;
+seek.oninput = () => {
+  if (isFinite(audio.duration)) { audio.currentTime = seek.value / 1000 * audio.duration; }
+  seek.style.setProperty("--p", seek.value / 10 + "%");
+};
+vol.oninput = () => { audio.volume = vol.value / 100; };
+audio.volume = vol.value / 100;
+</script>
+</body>
+</html>
